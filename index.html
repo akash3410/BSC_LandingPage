@@ -45,6 +45,19 @@
         }
       }
     </style>
+
+    <!-- Transformation -->
+    <style>
+      #container {
+        touch-action: none;
+      }
+
+      #topLayer img,
+      #container img {
+        object-position: center;
+        will-change: clip-path;
+      }
+    </style>
   </head>
 
   <body class="bg-white text-gray-800">
@@ -377,6 +390,62 @@
       </div>
     </section>
 
+    <!-- TRUE OVERLAY IMAGE SLIDER -->
+    <section class="max-w-6xl mx-auto px-6 py-20">
+      <h2 class="text-3xl font-bold text-center mb-10">
+        See Real Before & After Transformation
+      </h2>
+
+      <div
+        id="container"
+        class="relative max-w-4xl mx-auto h-[450px] rounded-2xl overflow-hidden shadow-2xl select-none"
+      >
+        <!-- BASE IMAGE (BOTTOM) -->
+        <img
+          src="https://m.media-amazon.com/images/I/61Ai1FbkItL._AC_UF894,1000_QL80_.jpg"
+          class="absolute inset-0 w-full h-full object-cover"
+        />
+
+        <!-- TOP IMAGE (OVERLAY - CONTROLLED) -->
+        <div
+          id="topLayer"
+          class="absolute inset-0 w-full h-full"
+          style="clip-path: inset(0 50% 0 0)"
+        >
+          <img
+            src="https://zeotexbd.com/storage/products/171/turkey-sofa-cover-3-seater-green-zeo-tex-bd-003001-1742980066.webp"
+            class="w-full h-full object-cover"
+          />
+        </div>
+
+        <!-- CENTER LINE -->
+        <div
+          class="absolute top-0 left-1/2 w-[2px] h-full bg-white/60 shadow-lg"
+        ></div>
+
+        <!-- HANDLE -->
+        <div
+          id="handle"
+          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-xl flex items-center justify-center cursor-ew-resize"
+        >
+          ⇆
+        </div>
+
+        <!-- LABELS -->
+        <div
+          class="absolute top-4 left-4 bg-black/60 text-white px-3 py-1 rounded"
+        >
+          Before
+        </div>
+
+        <div
+          class="absolute top-4 right-4 bg-black/60 text-white px-3 py-1 rounded"
+        >
+          After
+        </div>
+      </div>
+    </section>
+
     <!-- FINAL CTA -->
     <section class="bg-green-600 text-white text-center py-12">
       <h2 class="text-3xl font-bold">Don’t Miss This Offer!</h2>
@@ -552,6 +621,67 @@
           }, 800);
         }
       }, 2500);
+    </script>
+
+    <script>
+      const container = document.getElementById("container");
+      const handle = document.getElementById("handle");
+      const topLayer = document.getElementById("topLayer");
+
+      let target = 50;
+      let current = 50;
+      let dragging = false;
+
+      function animate() {
+        current += (target - current) * 0.12;
+
+        // 👉 KEY: overlay reveal control
+        topLayer.style.clipPath = `inset(0 ${100 - current}% 0 0)`;
+
+        handle.style.left = current + "%";
+
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+
+      function setPosition(clientX) {
+        const rect = container.getBoundingClientRect();
+        let x = clientX - rect.left;
+
+        x = Math.max(0, Math.min(rect.width, x));
+
+        target = (x / rect.width) * 100;
+      }
+
+      // Desktop
+      handle.addEventListener("mousedown", () => (dragging = true));
+      window.addEventListener("mouseup", () => (dragging = false));
+
+      window.addEventListener("mousemove", (e) => {
+        if (!dragging) return;
+        setPosition(e.clientX);
+      });
+
+      // Mobile
+      container.addEventListener("touchstart", (e) => {
+        dragging = true;
+        setPosition(e.touches[0].clientX);
+      });
+
+      container.addEventListener("touchend", () => {
+        dragging = false;
+      });
+
+      container.addEventListener("touchmove", (e) => {
+        if (!dragging) return;
+        setPosition(e.touches[0].clientX);
+      });
+
+      // Click support
+      container.addEventListener("click", (e) => {
+        setPosition(e.clientX);
+      });
     </script>
   </body>
 </html>
