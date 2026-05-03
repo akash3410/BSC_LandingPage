@@ -180,7 +180,7 @@
         </div>
 
         <!-- SLIDER VIEWPORT -->
-        <div class="mt-14 overflow-hidden relative">
+        <div class="mt-14 overflow-hidden relative select-none">
           <!-- TRACK -->
           <div id="whyTrack" class="flex gap-6 w-max will-change-transform">
             <div class="w-[280px] bg-white p-6 rounded-2xl shadow">
@@ -502,32 +502,74 @@
       }
     </script>
 
-    <!-- 🚀 INFINITE SLIDER JS -->
     <script>
-      const track = document.getElementById("whyTrack");
+      window.addEventListener("load", () => {
+        const track = document.getElementById("whyTrack");
 
-      // duplicate items for seamless loop
-      track.innerHTML += track.innerHTML;
+        track.innerHTML += track.innerHTML;
 
-      let position = 0;
-      const speed = 1; // adjust speed (0.5 slow, 1 normal, 2 fast)
+        let position = 0;
+        let speed = 0.5;
+        let isPaused = false;
+        let isDragging = false;
 
-      function animate() {
-        position += speed;
+        let startX = 0;
 
-        const halfWidth = track.scrollWidth / 2;
+        function animate() {
+          if (!isPaused && !isDragging) {
+            position += speed;
 
-        // reset smoothly without jump
-        if (position >= halfWidth) {
-          position = 0;
+            const halfWidth = track.scrollWidth / 2;
+
+            // 🔥 FIX: keep position safe
+            if (position >= halfWidth) position = 0;
+            if (position < 0) position = halfWidth;
+
+            track.style.transform = `translateX(-${position}px)`;
+          }
+
+          requestAnimationFrame(animate);
         }
 
-        track.style.transform = `translateX(-${position}px)`;
+        animate();
 
-        requestAnimationFrame(animate);
-      }
+        /* 🖱️ HOVER */
+        track.addEventListener("mouseenter", () => {
+          isPaused = true;
+        });
 
-      animate();
+        track.addEventListener("mouseleave", () => {
+          isPaused = false;
+        });
+
+        /* 📱 TOUCH */
+        track.addEventListener("touchstart", (e) => {
+          isDragging = true;
+          startX = e.touches[0].clientX;
+        });
+
+        track.addEventListener("touchmove", (e) => {
+          if (!isDragging) return;
+
+          let moveX = e.touches[0].clientX;
+          let diff = startX - moveX;
+
+          position += diff;
+
+          track.style.transform = `translateX(-${position}px)`;
+
+          startX = moveX;
+        });
+
+        track.addEventListener("touchend", () => {
+          isDragging = false;
+
+          // 🔥 FORCE resume (main fix)
+          setTimeout(() => {
+            isPaused = false;
+          }, 50);
+        });
+      });
     </script>
 
     <!-- Zoom Lens -->
@@ -623,6 +665,7 @@
       }, 2500);
     </script>
 
+    <!-- Transformation -->
     <script>
       const container = document.getElementById("container");
       const handle = document.getElementById("handle");
